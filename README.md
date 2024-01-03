@@ -1,7 +1,7 @@
 # CoffeeMD
 
 `coffeemd` is a tool to make changes to files in an an Obsidian vault after
-you've created it with [t2md](https://github.com/GSGBen/t2md) and have already
+you've created the vault with [t2md](https://github.com/GSGBen/t2md) and have already
 started using it. Changes that would have been good to make in t2md, but are now
 too late to make there because you're already using the vault.
 

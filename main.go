@@ -9,9 +9,18 @@ import (
 
 func main() {
 
+	vaultPath := ""
+
 	app := &cli.App{
 		Name:  "coffeemd",
 		Usage: "a tool to make changes to files in an an Obsidian vault after you've created it with t2md and have already started using it.",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "vault-path",
+				Value: "",
+				Usage: "the path to your Obsidian vault (or a folder of markdown files)",
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

@@ -1,6 +1,23 @@
 package main
 
+import (
+	"log"
+	"os"
+
+	"github.com/urfave/cli"
+)
+
 func main() {
+
+	app := &cli.App{
+		Name:  "coffeemd",
+		Usage: "a tool to make changes to files in an an Obsidian vault after you've created it with t2md and have already started using it.",
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+
 	// get the path to the obsidian vault (folder with markdown files) (global option)
 
 	// take an apply option to actually make the change, not just list it (check mode by default)

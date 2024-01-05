@@ -1,19 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli"
 )
 
-var (
-	vaultPath = ""
-	apply     = false
-)
-
 func main() {
+
+	vaultPath := ""
+	apply := false
 
 	app := &cli.App{
 		Name:  "coffeemd",
@@ -56,7 +53,9 @@ to
 
 	(content...)
 				`,
-				Action: headerToFrontmatter,
+				Action: func(cCtx *cli.Context) error {
+					return headerToFrontmatter(cCtx, vaultPath, apply)
+				},
 			},
 		},
 	}
@@ -64,10 +63,6 @@ to
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(vaultPath)
-
-	// take a subcommand indicating which function to apply
 
 	// find all files matching the issue
 
@@ -82,9 +77,4 @@ to
 	//		file without it
 	//		file with it but no "Original URL:"
 	// 		file with the --- lower for another purpose, and "Original URL:" (false positive)
-}
-
-func headerToFrontmatter(cCtx *cli.Context) error {
-	fmt.Println("headerToFrontmatter")
-	return nil
 }

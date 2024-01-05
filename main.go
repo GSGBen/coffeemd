@@ -1,24 +1,62 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli"
 )
 
-func main() {
+var (
+	vaultPath = ""
+	apply     = false
+)
 
-	vaultPath := ""
+func main() {
 
 	app := &cli.App{
 		Name:  "coffeemd",
 		Usage: "a tool to make changes to files in an an Obsidian vault after you've created it with t2md and have already started using it.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "vault-path",
-				Value: "",
-				Usage: "the path to your Obsidian vault (or a folder of markdown files)",
+				Name:        "vault-path",
+				Value:       "",
+				Usage:       "the path to your Obsidian vault (or a folder of markdown files)",
+				Required:    true,
+				Destination: &vaultPath,
+			},
+			&cli.BoolFlag{
+				Name:        "apply",
+				Usage:       "Specify this flag to make the actual changes. Without this it'll just be a dry run",
+				Destination: &apply,
+			},
+		},
+		Commands: []cli.Command{
+			{
+				Name:  "header-to-frontmatter",
+				Usage: `Convert the too-verbose header + Original URL: to yml frontmatter`,
+				Description: `convert the manual and
+too-heavy converted card headers to frontmatter. From:
+
+	# (emoji) Full Card Name
+
+	Original URL: https://trello.com/example
+
+	---
+
+	(content...)
+
+to
+
+	---
+	title: (emoji) Full Card Name
+	original_url: https://trello.com/example
+	---
+
+	(content...)
+				`,
+				Action: headerToFrontmatter,
 			},
 		},
 	}
@@ -27,10 +65,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// get the path to the obsidian vault (folder with markdown files) (global option)
-
-	// take an apply option to actually make the change, not just list it (check mode by default)
-	// (global option)
+	fmt.Println(vaultPath)
 
 	// take a subcommand indicating which function to apply
 
@@ -47,4 +82,9 @@ func main() {
 	//		file without it
 	//		file with it but no "Original URL:"
 	// 		file with the --- lower for another purpose, and "Original URL:" (false positive)
+}
+
+func headerToFrontmatter(cCtx *cli.Context) error {
+	fmt.Println("headerToFrontmatter")
+	return nil
 }

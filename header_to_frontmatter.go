@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/urfave/cli"
 )
@@ -29,7 +30,21 @@ func findFilesWithT2MDHeader(vaultPath string) []string {
 //	(content...)
 //
 // This is a key function because finding all the files with this and avoiding false positives is
-// important.
+// important. This one should have a lot of tests.
 func hasT2MDHeader(markdownContent string) bool {
-	return false
+	regex := regexp.MustCompile(
+		// no (?m) here because we want to explicitly control newline matching to narrow down the
+		// search.
+		// exactly at the start: #<space><any non-whitespace character><the rest of the title line>
+		`^# \S.+` +
+			// Original URL: in the exactly expected place
+			`\n\n` +
+			// and the exactly expected format
+			`Original URL: https://trello\.com/.*` +
+			// the line break in the exactly expected place
+			`\n\n` +
+			// and format
+			`---\n`)
+
+	return regex.MatchString(markdownContent)
 }

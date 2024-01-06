@@ -37,14 +37,14 @@ func hasT2MDHeader(markdownContent string) bool {
 		// search.
 		// exactly at the start: #<space><any non-whitespace character><the rest of the title line>
 		`^# \S.+` +
-			// Original URL: in the exactly expected place
-			`\n\n` +
+			// Original URL: in the exactly expected place (\r's for windows)
+			`\r?\n\r?\n` +
 			// and the exactly expected format
 			`Original URL: https://trello\.com/.*` +
 			// the line break in the exactly expected place
-			`\n\n` +
+			`\r?\n\r?\n` +
 			// and format
-			`---\n`)
+			`---\r?\n`)
 
 	return regex.MatchString(markdownContent)
 }

@@ -63,18 +63,4 @@ to
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-
-	// find all files matching the issue
-
-	// if check mode: output that the file will be changed
-	// if not check mode:
-	// 		convert the format
-	//		change in place
-	//		output that it was changed
-
-	// test:
-	//		file with it as expected
-	//		file without it
-	//		file with it but no "Original URL:"
-	// 		file with the --- lower for another purpose, and "Original URL:" (false positive)
 }

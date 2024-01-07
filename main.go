@@ -21,6 +21,7 @@ func main() {
 				Value:       "",
 				Usage:       "the path to your Obsidian vault (or a folder of markdown files)",
 				Required:    true,
+				EnvVar:      "COFFEEMD_VAULT_PATH",
 				Destination: &vaultPath,
 			},
 			&cli.BoolFlag{

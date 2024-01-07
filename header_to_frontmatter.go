@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// the regex used to find the # Title ... Original URL: ... --- header.
+// the regex used to find the header.
 // e.g.
 //
 //	# (emoji) Full Card Name
@@ -33,43 +33,53 @@ var headerRegex = regexp.MustCompile(
 		// and format
 		`---\r?\n`)
 
+// headerSearchResult keeps the file path, search result and (if relevant) the resulting
+// header snippet together so that we don't have to run a regex search again to find the
+// header when we need it.
+type headerSearchResult struct {
+	// the path to the markdown file
+	filePath string
+	// whether or not the search found the header
+	containsHeader bool
+	// if containsHeader is true, the content of the header (from the # to the end of
+	// the ---)
+	header string
+}
+
 // headerToFrontmatter is the entrypoint of the header-to-frontmatter action.
 func headerToFrontmatter(cCtx *cli.Context, vaultPath string, apply bool) error {
-	pathsOfFilesToChange, err := findFilesWithT2MDHeader(vaultPath)
+	searchResults, err := findFilesWithT2MDHeader(vaultPath)
 	if err != nil {
 		return err
 	}
 
 	if apply {
-		// if check mode: output that the file will be changed
-		// if not check mode:
-		// 		convert the format
-		//		change in place
-		//		output that it was changed
+		for _, hsr := range searchResults {
+			convertHeaderInPlace(hsr)
+			fmt.Printf("Converted the header in \"%s\"\n", hsr.filePath)
+		}
+		fmt.Println()
+		fmt.Printf("Converted headers in %d files\n", len(searchResults))
+		fmt.Println()
 	} else {
 		fmt.Println("The below files will have their headers (# Title, Original URL: value, --- separator) migrated to frontmatter:")
 		fmt.Println()
-		fmt.Println(strings.Join(pathsOfFilesToChange, "\n"))
+		for _, hsr := range searchResults {
+			fmt.Println(hsr.filePath)
+		}
 		fmt.Println()
-		fmt.Printf("%d files total\n", len(pathsOfFilesToChange))
+		fmt.Printf("%d files total\n", len(searchResults))
 		fmt.Println()
 		fmt.Println("The above files will have their headers (# Title, Original URL: value, --- separator) migrated to frontmatter.")
 		fmt.Println()
 	}
 	return nil
-
-	// test:
-	//		file with it as expected
-	//		file without it
-	//		file with it but no "Original URL:"
-	// 		file with the --- lower for another purpose, and "Original URL:" (false positive)
-	//		a # further down
 }
 
-// findFilesWithHeader searches through all markdown files in vaultPath and returns the path of
+// findFilesWithHeader searches through all markdown files in vaultPath and returns
 // those that have a header created by T2MD.
-func findFilesWithT2MDHeader(vaultPath string) ([]string, error) {
-	var markdownFilePaths []string
+func findFilesWithT2MDHeader(vaultPath string) ([]headerSearchResult, error) {
+	var results []headerSearchResult
 	err := filepath.WalkDir(
 		vaultPath,
 		func(path string, d fs.DirEntry, err error) error {
@@ -79,8 +89,12 @@ func findFilesWithT2MDHeader(vaultPath string) ([]string, error) {
 					return err
 				}
 
-				if hasT2MDHeader(string(content)) {
-					markdownFilePaths = append(markdownFilePaths, path)
+				headerFound, header := findT2MDHeader(string(content))
+				if headerFound {
+					results = append(
+						results,
+						headerSearchResult{path, headerFound, header},
+					)
 				}
 			}
 			return nil
@@ -90,10 +104,10 @@ func findFilesWithT2MDHeader(vaultPath string) ([]string, error) {
 		return nil, err
 	}
 
-	return markdownFilePaths, nil
+	return results, nil
 }
 
-// hasT2MDHeader returns true if the given markdown content starts with a header created by T2MD,
+// findT2MDHeader checks if the given markdown content starts with a header created by T2MD,
 // e.g:
 //
 //	# (emoji) Full Card Name
@@ -104,9 +118,17 @@ func findFilesWithT2MDHeader(vaultPath string) ([]string, error) {
 //
 //	(content...)
 //
+// If it does, `found` is true. If `found` is true, `header` will contain the content of the header.
+//
 // This is a key function because finding all the files with this and avoiding false positives is
 // important. This one should have a lot of tests.
-func hasT2MDHeader(markdownContent string) bool {
+func findT2MDHeader(markdownContent string) (found bool, header string) {
+	header = headerRegex.FindString(markdownContent)
+	found = header != ""
+	return
+}
 
-	return headerRegex.MatchString(markdownContent)
+// convertHeaderInPlace converts the header in the
+func convertHeaderInPlace(hsr headerSearchResult) {
+
 }

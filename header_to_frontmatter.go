@@ -1,12 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/urfave/cli"
 )
@@ -20,7 +23,7 @@ import (
 //
 //	---
 var headerRegex = regexp.MustCompile(
-	// no (?m) here because we want to explicitly control newline matching to narrow down the
+	// no (?s) here because we want to explicitly control newline matching to narrow down the
 	// search.
 	// exactly at the start: #<space><any non-whitespace character><the rest of the title line>
 	`^# \S.+` +
@@ -33,6 +36,15 @@ var headerRegex = regexp.MustCompile(
 		// and format
 		`---\r?\n`)
 
+// the regex that extracts the title and
+var parsedHeaderRegex = regexp.MustCompile(
+	// no (?s) here because we want to explicitly control newline matching to narrow down the
+	// search.
+	// the title is the rest of the line after the "# "
+	`^# (.*?)\n` +
+		// the original URL is the rest of the line after "Original URL: "
+		`\nOriginal URL: (.*?)\n`)
+
 // headerSearchResult keeps the file path, search result and (if relevant) the resulting
 // header snippet together so that we don't have to run a regex search again to find the
 // header when we need it.
@@ -44,6 +56,12 @@ type headerSearchResult struct {
 	// if containsHeader is true, the content of the header (from the # to the end of
 	// the ---)
 	header string
+}
+
+// parsed header contains the title and Original URL extracted from a header.
+type parsedHeader struct {
+	Title       string `yaml:"title"`
+	OriginalURL string `yaml:"original_url"`
 }
 
 // headerToFrontmatter is the entrypoint of the header-to-frontmatter action. it either shows the
@@ -130,7 +148,50 @@ func findT2MDHeader(markdownContent string) (found bool, header string) {
 	return
 }
 
-// convertHeaderInPlace converts the header in the
-func convertHeaderInPlace(hsr headerSearchResult) {
+// convertHeaderInPlace converts the header in the given file to frontmatter.
+func convertHeaderInPlace(hsr headerSearchResult) error {
+	if !hsr.containsHeader {
+		return errors.New("hsr.containsHeader == false")
+	}
 
+	ph, err := parseHeader(hsr.header)
+	if err != nil {
+		return err
+	}
+
+	yamlBytes, err := yaml.Marshal(&ph)
+	if err != nil {
+		return err
+	}
+	yamlString := "---\n" + string(yamlBytes) + "---\n"
+
+	originalContent, err := os.ReadFile(hsr.filePath)
+	if err != nil {
+		return err
+	}
+	updatedContent := strings.Replace(string(originalContent), hsr.header, yamlString, 1)
+	fileDetails, err := os.Stat(hsr.filePath)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(hsr.filePath, []byte(updatedContent), fileDetails.Mode())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// parseHeader extracts the title and Original URL from a T2MD-generated header.
+func parseHeader(header string) (parsedHeader, error) {
+	submatches := parsedHeaderRegex.FindStringSubmatch(header)
+	// standard setup - first index [0] is the full match, second [1] is the first submatch, etc
+	if len(submatches) != 3 {
+		return parsedHeader{}, errors.New("header and title not exactly matched")
+	}
+
+	return parsedHeader{
+		Title:       submatches[1],
+		OriginalURL: submatches[2],
+	}, nil
 }

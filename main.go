@@ -53,6 +53,11 @@ to
 	---
 
 	(content...)
+
+Note that this will only pick up a header in the exact T2MD format,
+aka the above at the start of a file. So if you already have frontmatter
+above it (which also has to be at the start of a file) it won't be picked
+up, and the frontmatter won't be overwritten.
 				`,
 				Action: func(cCtx *cli.Context) error {
 					return headerToFrontmatter(cCtx, vaultPath, apply)

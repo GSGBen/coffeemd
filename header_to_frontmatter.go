@@ -46,7 +46,9 @@ type headerSearchResult struct {
 	header string
 }
 
-// headerToFrontmatter is the entrypoint of the header-to-frontmatter action.
+// headerToFrontmatter is the entrypoint of the header-to-frontmatter action. it either shows the
+// files it will change, or makes the change - converting the T2MD-created header to
+// Obsidian/markdown frontmatter.
 func headerToFrontmatter(cCtx *cli.Context, vaultPath string, apply bool) error {
 	searchResults, err := findFilesWithT2MDHeader(vaultPath)
 	if err != nil {

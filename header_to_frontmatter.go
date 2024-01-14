@@ -9,8 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/urfave/cli"
 )
 
@@ -60,8 +58,8 @@ type headerSearchResult struct {
 
 // parsed header contains the title and Original URL extracted from a header.
 type parsedHeader struct {
-	Title       string `yaml:"title"`
-	OriginalURL string `yaml:"original_url"`
+	Title       string
+	OriginalURL string
 }
 
 // headerToFrontmatter is the entrypoint of the header-to-frontmatter action. it either shows the
@@ -159,11 +157,7 @@ func convertHeaderInPlace(hsr headerSearchResult) error {
 		return err
 	}
 
-	yamlBytes, err := yaml.Marshal(&ph)
-	if err != nil {
-		return err
-	}
-	yamlString := "---\n" + string(yamlBytes) + "---\n"
+	yamlString := ph.toYamlString()
 
 	originalContent, err := os.ReadFile(hsr.filePath)
 	if err != nil {
@@ -194,4 +188,11 @@ func parseHeader(header string) (parsedHeader, error) {
 		Title:       submatches[1],
 		OriginalURL: submatches[2],
 	}, nil
+}
+
+// toYamlString converts the parsedHeader to its yaml representation.
+// Writing my own function because go-yaml doesn't support writing out emoji - it escapes it.
+// unsafe on untrusted input, no escaping, etc.
+func (ph parsedHeader) toYamlString() string {
+	return fmt.Sprintf("---\ntitle: %s\noriginal_url: %s\n---\n\n", ph.Title, ph.OriginalURL)
 }

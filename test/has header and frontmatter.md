@@ -4,7 +4,7 @@ example: "another example"
 title: "already set"
 ---
 
-# (emoji) Full Card Name
+# 🥅 Full Card Name
 
 Original URL: https://trello.com/example
 

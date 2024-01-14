@@ -35,7 +35,5 @@ TODO. Something like `coffeemd -help` to start.
 
 ## TODO:
 
-- test nested files
-- test a file with emoji in the title
 - write tests for parsing and other new functions
 - run on full vault

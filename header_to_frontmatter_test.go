@@ -67,3 +67,47 @@ func TestFindT2MDHeaderCorrectScope(t *testing.T) {
 		}
 	}
 }
+
+func TestParseHeader(t *testing.T) {
+	headerString := `# 🥅 Full Card Name
+
+Original URL: https://trello.com/example
+
+---`
+
+	want := parsedHeader{
+		Title:       "🥅 Full Card Name",
+		OriginalURL: "https://trello.com/example",
+	}
+
+	got, err := parseHeader(headerString)
+	if err != nil {
+		t.Fatalf("error parsing header string. %s", err)
+	}
+	if got.Title != want.Title {
+		t.Fatalf("expected: %v, got: %v", want.Title, got.Title)
+	}
+	if got.OriginalURL != want.OriginalURL {
+		t.Fatalf("expected: %v, got: %v", want.OriginalURL, got.OriginalURL)
+	}
+}
+
+func TestParsedHeaderToYamlString(t *testing.T) {
+	ph := parsedHeader{
+		Title:       "🥅 Full Card Name",
+		OriginalURL: "https://trello.com/example",
+	}
+
+	want := `---
+title: 🥅 Full Card Name
+original_url: https://trello.com/example
+---
+
+`
+
+	got := ph.toYamlString()
+
+	if got != want {
+		t.Fatalf("expected: %v, got: %v", want, got)
+	}
+}

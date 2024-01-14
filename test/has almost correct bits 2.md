@@ -1,4 +1,4 @@
-# (emoji) Full Card Name
+# 🥅 Full Card Name
 
 ---
 

@@ -13,8 +13,9 @@ func main() {
 	apply := false
 
 	app := &cli.App{
-		Name:  "coffeemd",
-		Usage: "a tool to make changes to files in an an Obsidian vault after you've created it with t2md and have already started using it.",
+		Name:    "coffeemd",
+		Version: "1.0.1",
+		Usage:   "a tool to make changes to files in an an Obsidian vault after you've created it with t2md and have already started using it.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "vault-path",

@@ -194,5 +194,5 @@ func parseHeader(header string) (parsedHeader, error) {
 // Writing my own function because go-yaml doesn't support writing out emoji - it escapes it.
 // unsafe on untrusted input, no escaping, etc.
 func (ph parsedHeader) toYamlString() string {
-	return fmt.Sprintf("---\ntitle: %s\noriginal_url: %s\n---\n\n", ph.Title, ph.OriginalURL)
+	return fmt.Sprintf("---\ntitle: %s\noriginal_url: %s\n---\n", ph.Title, ph.OriginalURL)
 }

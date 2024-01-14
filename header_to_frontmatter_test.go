@@ -102,7 +102,6 @@ func TestParsedHeaderToYamlString(t *testing.T) {
 title: 🥅 Full Card Name
 original_url: https://trello.com/example
 ---
-
 `
 
 	got := ph.toYamlString()
